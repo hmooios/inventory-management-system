@@ -6,6 +6,7 @@ import categoryRoutes from '../modules/category/category.routes';
 import brandRoutes from '../modules/brand/brand.routes';
 import sellerRoutes from '../modules/seller/seller.routes';
 import purchaseRoutes from '../modules/purchase/purchase.routes';
+import customerOrderRoutes from '../modules/customerOrder/customerOrder.routes';
 
 const rootRouter = Router();
 
@@ -16,5 +17,6 @@ rootRouter.use('/categories', categoryRoutes);
 rootRouter.use('/brands', brandRoutes);
 rootRouter.use('/sellers', sellerRoutes);
 rootRouter.use('/purchases', purchaseRoutes);
+rootRouter.use('/customer-orders', customerOrderRoutes);
 
 export default rootRouter;

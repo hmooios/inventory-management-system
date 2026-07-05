@@ -5,6 +5,7 @@ import {
   AreaChartOutlined,
   MoneyCollectFilled,
   ProfileFilled,
+  ShoppingCartOutlined,
   UserOutlined,
 } from '@ant-design/icons';
 import React from 'react';
@@ -40,6 +41,11 @@ export const sidebarItems = [
     key: 'Manage Purchase',
     label: <NavLink to='/purchases'>MANAGE PURCHASES</NavLink>,
     icon: React.createElement(AimOutlined),
+  },
+  {
+    key: 'Customer Orders',
+    label: <NavLink to='/customer-orders'>CUSTOMER ORDERS</NavLink>,
+    icon: React.createElement(ShoppingCartOutlined),
   },
   // {
   //   key: 'Sales History',

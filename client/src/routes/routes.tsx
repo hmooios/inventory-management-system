@@ -14,6 +14,7 @@ import SaleManagementPage from '../pages/managements/SaleManagementPage';
 import SellerManagementPage from '../pages/managements/SellerManagementPage';
 import ChangePasswordPage from '../pages/ChangePasswordPage';
 import EditProfilePage from '../pages/EditProfilePage';
+import CustomerOrderManagementPage from '../pages/managements/CustomerOrderManagementPage';
 
 export const router = createBrowserRouter([
   {
@@ -73,6 +74,14 @@ export const router = createBrowserRouter([
         element: (
           <ProtectRoute>
             <PurchaseManagementPage />
+          </ProtectRoute>
+        ),
+      },
+      {
+        path: 'customer-orders',
+        element: (
+          <ProtectRoute>
+            <CustomerOrderManagementPage />
           </ProtectRoute>
         ),
       },
