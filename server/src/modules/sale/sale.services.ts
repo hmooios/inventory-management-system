@@ -1,6 +1,6 @@
 /* eslint-disable no-unsafe-finally */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import mongoose, { Types } from 'mongoose';
+import { Types } from 'mongoose';
 import sortAndPaginatePipeline from '../../lib/sortAndPaginate.pipeline';
 import BaseServices from '../baseServices';
 import Sale from './sale.model';
@@ -16,30 +16,41 @@ class SaleServices extends BaseServices<any> {
    * Create new sale and decrease product stock
    */
   async create(payload: any, userId: string) {
-    const { productPrice, quantity } = payload;
-    payload.user = userId;
-    payload.totalPrice = productPrice * quantity;
-    const product = await Product.findById(payload.product);
+    const quantity = Number(payload.quantity);
+    const userObjectId = new Types.ObjectId(userId);
+    const product = await Product.findOne({ _id: payload.product, user: userObjectId });
 
-    if (quantity > product!.stock) {
+    if (!product) {
+      throw new CustomError(404, 'Product is not found!');
+    }
+
+    if (quantity > product.stock) {
       throw new CustomError(400, `${quantity} product are not available in stock!`);
     }
-    let result: any[];
-    const session = await mongoose.startSession();
+
+    const updatedProduct = await Product.findOneAndUpdate(
+      { _id: product._id, user: userObjectId, stock: { $gte: quantity } },
+      { $inc: { stock: -quantity } },
+      { new: true }
+    );
+
+    if (!updatedProduct) {
+      throw new CustomError(400, `${quantity} product are not available in stock!`);
+    }
 
     try {
-      session.startTransaction();
-
-      await Product.findByIdAndUpdate(product?._id, { $inc: { stock: -quantity } }, { session });
-      result = await this.model.create([payload], { session });
-      await session.commitTransaction();
-
-      return result;
+      return await this.model.create({
+        ...payload,
+        user: userObjectId,
+        product: product._id,
+        productName: product.name,
+        productPrice: product.price,
+        quantity,
+        totalPrice: product.price * quantity
+      });
     } catch (error) {
-      await session.abortTransaction();
+      await Product.findByIdAndUpdate(product._id, { $inc: { stock: quantity } });
       throw new CustomError(400, 'Sale create failed');
-    } finally {
-      await session.endSession();
     }
   }
 
