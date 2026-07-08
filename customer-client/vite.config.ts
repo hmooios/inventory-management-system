@@ -2,8 +2,8 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
 const allowedHosts = [
-  'inventoryadmin.htetzawphyo.dev',
-  'inventoryclient.htetzawphyo.dev'
+  'inventory-system.store',
+  'client.inventory-system.store'
 ];
 
 export default defineConfig({
