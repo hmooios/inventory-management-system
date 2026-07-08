@@ -46,6 +46,10 @@ const globalErrorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
     errorResponse.statusCode = err.statusCode;
     errorResponse.message = err.message;
     errorResponse.errors = errors;
+  } else if (err?.name === 'MulterError') {
+    errorResponse.statusCode = httpStatus.BAD_REQUEST;
+    errorResponse.message = err.message;
+    errorResponse.errors = { upload: err.message };
   } else if (err?.code === 11000) {
     const [key, value] = Object.entries(err.keyValue)[0];
 

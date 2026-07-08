@@ -8,6 +8,7 @@ import config from './config';
 
 const app: Application = express();
 
+app.set('trust proxy', 1);
 app.use(express.json());
 app.use(morgan('dev'));
 
@@ -27,6 +28,8 @@ app.use(
     origin: config.nodeEnv === 'dev' ? true : allowedOrigins,
   })
 );
+
+app.use('/uploads', express.static(config.upload_dir));
 
 // application routes
 app.use('/api/v1', rootRouter);

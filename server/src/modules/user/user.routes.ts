@@ -3,6 +3,7 @@ import userControllers from './user.controllers';
 import validateRequest from '../../middlewares/validateRequest';
 import userValidator from './user.validator';
 import verifyAuth from '../../middlewares/verifyAuth';
+import uploadProfilePicture from '../../middlewares/uploadProfilePicture';
 
 const userRoutes = Router();
 
@@ -16,5 +17,11 @@ userRoutes.post(
   userControllers.changePassword
 );
 userRoutes.patch('/', verifyAuth, userControllers.updateProfile);
+userRoutes.post(
+  '/profile-picture',
+  verifyAuth,
+  uploadProfilePicture.single('avatar'),
+  userControllers.updateProfilePicture
+);
 
 export default userRoutes;

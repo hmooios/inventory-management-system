@@ -3,16 +3,32 @@ import React from 'react';
 import {useGetAllCategoriesQuery} from '../../redux/features/management/categoryApi';
 import {useGetAllBrandsQuery} from '../../redux/features/management/brandApi';
 
+export interface ProductManagementQuery {
+  name: string;
+  category: string;
+  brand: string;
+  limit: number;
+  page: number;
+  minPrice?: number;
+  maxPrice?: number;
+}
+
 interface ProductManagementFilterProps {
-  query: {name: string; category: string; brand: string; limit: number};
-  setQuery: React.Dispatch<
-    React.SetStateAction<{name: string; category: string; brand: string; limit: number}>
-  >;
+  query: ProductManagementQuery;
+  setQuery: React.Dispatch<React.SetStateAction<ProductManagementQuery>>;
 }
 
 const ProductManagementFilter = ({query, setQuery}: ProductManagementFilterProps) => {
   const {data: categories} = useGetAllCategoriesQuery(undefined);
   const {data: brands} = useGetAllBrandsQuery(undefined);
+
+  const updateQuery = (nextQuery: Partial<ProductManagementQuery>) => {
+    setQuery((prev) => ({
+      ...prev,
+      ...nextQuery,
+      page: 1,
+    }));
+  };
 
   return (
     <Flex
@@ -31,13 +47,12 @@ const ProductManagementFilter = ({query, setQuery}: ProductManagementFilterProps
             range
             step={100}
             max={20000}
-            defaultValue={[1000, 5000]}
+            value={[query.minPrice ?? 0, query.maxPrice ?? 20000]}
             onChange={(value) => {
-              setQuery((prev) => ({
-                ...prev,
+              updateQuery({
                 minPrice: value[0],
                 maxPrice: value[1],
-              }));
+              });
             }}
           />
         </Col>
@@ -48,7 +63,7 @@ const ProductManagementFilter = ({query, setQuery}: ProductManagementFilterProps
             value={query.name}
             className={`input-field`}
             placeholder='Search by Product Name'
-            onChange={(e) => setQuery((prev) => ({...prev, name: e.target.value}))}
+            onChange={(e) => updateQuery({name: e.target.value})}
           />
         </Col>
         <Col xs={{span: 24}} md={{span: 4}}>
@@ -56,9 +71,8 @@ const ProductManagementFilter = ({query, setQuery}: ProductManagementFilterProps
           <select
             name='category'
             className={`input-field`}
-            defaultValue={query.category}
-            onChange={(e) => setQuery((prev) => ({...prev, category: e.target.value}))}
-            onBlur={(e) => setQuery((prev) => ({...prev, category: e.target.value}))}
+            value={query.category}
+            onChange={(e) => updateQuery({category: e.target.value})}
           >
             <option value=''>Filter by Category</option>
             {categories?.data?.map((category: {_id: string; name: string}) => (
@@ -73,9 +87,8 @@ const ProductManagementFilter = ({query, setQuery}: ProductManagementFilterProps
           <select
             name='Brand'
             className={`input-field`}
-            defaultValue={query.brand}
-            onChange={(e) => setQuery((prev) => ({...prev, brand: e.target.value}))}
-            onBlur={(e) => setQuery((prev) => ({...prev, brand: e.target.value}))}
+            value={query.brand}
+            onChange={(e) => updateQuery({brand: e.target.value})}
           >
             <option value=''>Filter by Brand</option>
             {brands?.data?.map((brand: {_id: string; name: string}) => (

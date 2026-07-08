@@ -4,15 +4,18 @@ import userProPic from '../assets/User.png';
 import CustomInput from '../components/CustomInput';
 import { useForm } from 'react-hook-form';
 import { profileInputFields } from '../constant/profile';
-import { useGetSelfProfileQuery, useUpdateProfileMutation } from '../redux/features/authApi';
+import {
+  useGetSelfProfileQuery,
+  useUpdateProfileMutation,
+  useUploadProfilePictureMutation,
+} from '../redux/features/authApi';
 import Loader from '../components/Loader';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
-import { config } from '../utils/config';
 
 const EditProfilePage = () => {
   const { data, isLoading } = useGetSelfProfileQuery(undefined);
-  const [updateProfile] = useUpdateProfileMutation();
+  const [uploadProfilePicture] = useUploadProfilePictureMutation();
   const navigate = useNavigate();
 
   if (isLoading) {
@@ -20,37 +23,41 @@ const EditProfilePage = () => {
   }
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const toastId = toast.loading('Uploading Image...');
+    const image = e.target.files?.[0];
 
-    const image = e.target.files?.[0] as any;
-    const data = new FormData();
-    data.append('file', image);
-    data.append('upload_preset', config.VITE_CLOUDINARY_UPLOAD_PRESET as string);
-    data.append('cloud_name', config.VITE_CLOUDINARY_CLOUD_NAME as string);
-    data.append('folder', 'inventory');
+    if (!image) {
+      return;
+    }
+
+    if (!image.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      e.target.value = '';
+      return;
+    }
+
+    if (image.size > 5 * 1024 * 1024) {
+      toast.error('Image size must be less than 5MB');
+      e.target.value = '';
+      return;
+    }
+
+    const toastId = toast.loading('Uploading image...');
+    const formData = new FormData();
+    formData.append('avatar', image);
 
     try {
-      const response = await fetch(
-        `https://api.cloudinary.com/v1_1/${config.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`,
-        {
-          method: 'POST',
-          body: data,
-        }
-      );
-      const res = await response.json();
+      const imgUploadRes = await uploadProfilePicture(formData).unwrap();
 
-      if (res.secure_url) {
-        const imgUploadRes = await updateProfile({ avatar: res.secure_url }).unwrap();
-
-        if (imgUploadRes.success) {
-          toast.success('Profile updated successfully', { id: toastId });
-        }
-        toast.success('Image Uploaded Successfully, now save update!', { id: toastId });
+      if (imgUploadRes.success) {
+        toast.success('Profile picture updated successfully', { id: toastId });
       } else {
-        toast.error('Failed to Upload Image', { id: toastId });
+        throw new Error('Failed to update profile image');
       }
-    } catch (error) {
-      toast.error('Failed to Upload Image', { id: toastId });
+    } catch (error: any) {
+      const message = error?.data?.message || error?.message || 'Failed to upload image';
+      toast.error(message, { id: toastId });
+    } finally {
+      e.target.value = '';
     }
   };
 
@@ -80,6 +87,7 @@ const EditProfilePage = () => {
               name='avatar'
               id='avatar'
               placeholder='Change Profile Picture'
+              accept='image/*'
               style={{ display: 'none' }}
               onChange={handleFileChange}
             />

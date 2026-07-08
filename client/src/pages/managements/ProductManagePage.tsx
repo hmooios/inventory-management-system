@@ -10,7 +10,9 @@ import {
   useUpdateProductMutation,
 } from '../../redux/features/management/productApi';
 import { ICategory, IProduct } from '../../types/product.types';
-import ProductManagementFilter from '../../components/query-filters/ProductManagementFilter';
+import ProductManagementFilter, {
+  type ProductManagementQuery,
+} from '../../components/query-filters/ProductManagementFilter';
 import CustomInput from '../../components/CustomInput';
 import toastMessage from '../../lib/toastMessage';
 import { useGetAllCategoriesQuery } from '../../redux/features/management/categoryApi';
@@ -20,18 +22,18 @@ import { useCreateSaleMutation } from '../../redux/features/management/saleApi';
 import { SpinnerIcon } from '@phosphor-icons/react';
 
 const ProductManagePage = () => {
-  const [current, setCurrent] = useState(1);
-  const [query, setQuery] = useState({
+  const [query, setQuery] = useState<ProductManagementQuery>({
     name: '',
     category: '',
     brand: '',
     limit: 10,
+    page: 1,
   });
 
   const { data: products, isFetching } = useGetAllProductsQuery(query);
 
   const onChange: PaginationProps['onChange'] = (page) => {
-    setCurrent(page);
+    setQuery((prev) => ({ ...prev, page }));
   };
 
   const tableData = products?.data?.map((product: IProduct) => ({
@@ -112,9 +114,9 @@ const ProductManagePage = () => {
       />
       <Flex justify='center' style={{ marginTop: '1rem' }}>
         <Pagination
-          current={current}
+          current={query.page}
           onChange={onChange}
-          defaultPageSize={query.limit}
+          pageSize={query.limit}
           total={products?.meta?.total}
         />
       </Flex>

@@ -2,6 +2,8 @@ import httpStatus from 'http-status';
 import asyncHandler from '../../lib/asyncHandler';
 import sendResponse from '../../lib/sendResponse';
 import userServices from './user.services';
+import CustomError from '../../errors/customError';
+import config from '../../config';
 
 class UserControllers {
   private services = userServices;
@@ -50,6 +52,25 @@ class UserControllers {
       success: true,
       statusCode: httpStatus.OK,
       message: 'User Profile updated successfully!',
+      data: result
+    });
+  });
+
+  // update profile picture
+  updateProfilePicture = asyncHandler(async (req, res) => {
+    if (!req.file) {
+      throw new CustomError(httpStatus.BAD_REQUEST, 'Profile picture is required');
+    }
+
+    const requestBaseUrl = `${req.protocol}://${req.get('host')}`;
+    const baseUrl = (config.upload_base_url || requestBaseUrl).replace(/\/$/, '');
+    const avatar = `${baseUrl}/uploads/profile/${req.file.filename}`;
+    const result = await this.services.updateProfile(req.user._id, { avatar });
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: 'Profile picture updated successfully!',
       data: result
     });
   });

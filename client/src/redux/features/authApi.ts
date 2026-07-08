@@ -46,6 +46,15 @@ const authApi = baseApi.injectEndpoints({
       invalidatesTags: ['user']
     }),
 
+    uploadProfilePicture: builder.mutation({
+      query: (payload) => ({
+        url: '/users/profile-picture',
+        method: 'POST',
+        body: payload
+      }),
+      invalidatesTags: ['user']
+    }),
+
   })
 })
 
@@ -54,5 +63,6 @@ export const {
   useRegisterMutation,
   useGetSelfProfileQuery,
   useChangePasswordMutation,
-  useUpdateProfileMutation
+  useUpdateProfileMutation,
+  useUploadProfilePictureMutation
 } = authApi
